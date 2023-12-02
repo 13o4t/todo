@@ -1,0 +1,11 @@
+function(enable_cache)
+    find_program(CCACHE ccache)
+    if(NOT CCACHE)
+        message(WARNING "ccache not found")
+        return()
+    endif()
+
+    message(STATUS "ccache enabled")
+    set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE} CACHE FILEPATH "CXX compiler cache used")
+    set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE} CACHE FILEPATH "C compiler cache used")
+endfunction()

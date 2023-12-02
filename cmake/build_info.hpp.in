@@ -1,0 +1,17 @@
+#pragma once
+
+#include <string_view>
+
+namespace build {
+    inline const std::string_view name = "@TARGET_NAME@";
+    inline const std::string_view description = "@TARGET_DESCRIPTION@";
+    inline const std::string_view version = "@VERSION_STRING@";
+    inline const unsigned int version_major = @VERSION_MAJOR@;
+    inline const unsigned int version_minor = @VERSION_MINOR@;
+    inline const unsigned int version_patch = @VERSION_PATCH@;
+    inline const unsigned int version_tweak = @VERSION_TWEAK@;
+    inline const std::string_view version_flag = "@VERSION_FLAG@";
+    inline const std::string_view git_branch = "@VERSION_BRANCH@";
+    inline const std::string_view git_shorthash = "@VERSION_SHORTHASH@";
+    inline const std::string_view git_hash = "@VERSION_FULLHASH@";
+}
