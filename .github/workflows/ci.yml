@@ -1,0 +1,129 @@
+name: ci
+on:
+  push:
+    tags:
+      - "v*"
+    branches:
+      - master
+      - release
+      - develop
+
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        #- {
+        #    name: "Windows MSVC",
+        #    os: windows-latest,
+        #    compiler: msvc,
+        #    package_generator: NSIS,
+        #    artifact_ext: ".exe",
+        #  }
+        - {
+            name: "Windows MSVC",
+            os: windows-latest,
+            compiler: msvc,
+            package_generator: ZIP,
+            artifact_ext: ".zip",
+          }
+        #- {
+        #    name: "Ubuntu GCC",
+        #    os: ubuntu-latest,
+        #    compiler: gcc,
+        #    package_generator: DEB,
+        #    artifact_ext: ".deb",
+        #  }
+        - {
+            name: "Ubuntu GCC",
+            os: ubuntu-latest,
+            compiler: gcc,
+            package_generator: TGZ,
+            artifact_ext: ".tar.gz",
+          }
+        #- {
+        #    name: "macOS LLVM",
+        #    os: macos-latest,
+        #    compiler: llvm,
+        #    package_generator: DragNDrop,
+        #    artifact_ext: ".dmg",
+        #  }
+        - {
+            name: "macOS LLVM",
+            os: macos-latest,
+            compiler: llvm,
+            package_generator: TGZ,
+            artifact_ext: ".tar.gz",
+          }
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Cache
+        uses: actions/cache@v4
+        with:
+          path: $HOME/.ccache
+          key: ${{ runner.os }}-${{ matrix.config.compiler }}-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: ${{ runner.os }}-${{ matrix.config.compiler }}
+
+      - name: Setup Cpp
+        uses: aminya/setup-cpp@v1
+        with:
+          compiler: ${{ matrix.config.compiler }}
+          vcvarsall: ${{ contains(matrix.config.os, 'windows') }}
+          cmake: true
+          ninja: true
+          cppcheck: true
+          clangtidy: true
+          ccache: true
+
+      - name: Configure
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        run: cmake -S . -B ./build -DCMAKE_BUILD_TYPE:STRING=Release -DENABLE_IPO:BOOL=OFF
+
+      - name: Configure Packaging
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: cmake -S . -B ./build -DCMAKE_BUILD_TYPE:STRING=Release -DPACKAGING_MODE:BOOL=ON
+
+      - name: Build
+        run: cmake --build ./build --config Release
+
+      - name: Smoke Test
+        if: startsWith(github.ref, 'refs/heads/develop')
+        working-directory: ./build/test
+        run: ctest -R "\[smoke\]"
+
+      - name: Test
+        if: startsWith(github.ref, 'refs/heads/master') || startsWith(github.ref, 'refs/heads/release')
+        working-directory: ./build/test
+        run: ctest
+
+      - name: CPack
+        if: startsWith(github.ref, 'refs/tags/v')
+        working-directory: ./build
+        run: cpack -C Release -G ${{ matrix.config.package_generator }}
+
+      - name: Setup Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/setup-go@v4
+        with:
+          go-version: "stable"
+
+      - name: ChangeLog
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          go install github.com/git-chglog/git-chglog/cmd/git-chglog@latest
+          git-chglog "${{ github.ref_name }}" > ${{ github.workspace }}-CHANGELOG.md
+
+      - name: Publish Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          body_path: ${{ github.workspace }}-CHANGELOG.md
+          files: build/*-*-*${{ matrix.config.artifact_ext }}
+
+    permissions:
+      contents: write

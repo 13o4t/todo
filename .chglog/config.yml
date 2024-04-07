@@ -1,0 +1,39 @@
+style: github
+template: CHANGELOG.tpl.md
+info:
+  title: CHANGELOG
+  repository_url: ""
+options:
+  tag_filter_pattern: '^v'
+  sort: "date"
+
+  commits:
+    filters:
+      Type:
+        - feat
+        - fix
+  commit_groups:
+    group_by: Type
+    sort_by: Title
+    title_order:
+      - feat
+      - fix
+    title_maps:
+      feat: Features
+      fix: Bug Fixes
+  issues:
+    prefix:
+      - #
+  refs:
+    actions:
+      - Close
+      - Fix
+  header:
+    pattern: "^(\\w*)(?:\\(([\\w\\$\\.\\-\\*\\s]*)\\))?\\:\\s(.*)$"
+    pattern_maps:
+      - Type
+      - Scope
+      - Subject
+  notes:
+    keywords:
+      - BREAKING CHANGE
