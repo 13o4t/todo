@@ -9,6 +9,8 @@
     #include <dlfcn.h>
 #endif
 
+#include "spdlog/spdlog.h"
+
 #include "task/parser.h"
 
 namespace task {
@@ -73,7 +75,11 @@ namespace task {
 
         for (auto& entry : entries_) {
             if (type == Type::kAfterDone) {
-                if (entry.second.after_done) entry.second.after_done(description.c_str());
+                if (entry.second.after_done) {
+                    spdlog::debug("call after done plugin: {}", entry.first);
+                    entry.second.after_done(description.c_str());
+                    spdlog::debug("finish call after done plugin: {}", entry.first);
+                }
             }
         }
     }
