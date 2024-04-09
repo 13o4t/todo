@@ -2,12 +2,13 @@
 
 #include <iostream>
 
+#include "nlohmann/json.hpp"
 #include "spdlog/spdlog.h"
 
 #include "task/date.h"
 #include "task/manager.h"
 
-void after_done(const char* task_description) {
+void after_done(const char* task_description, const char* config) {
     task::Parser parser;
     auto res = parser.parse(task_description);
     if (!res.has_value()) return;
@@ -37,5 +38,7 @@ void after_done(const char* task_description) {
     std::string new_task = parser.to_string(task);
     spdlog::debug("[plugin:repeat] add new task: {}", new_task);
 
+    nlohmann::json config_json = nlohmann::json::parse(config);
+    task::Manager::instance().config() = config_json;
     task::Manager::instance().add_task(new_task);
 }

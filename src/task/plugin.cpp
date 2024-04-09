@@ -9,8 +9,10 @@
     #include <dlfcn.h>
 #endif
 
+#include "nlohmann/json.hpp"
 #include "spdlog/spdlog.h"
 
+#include "task/manager.h"
 #include "task/parser.h"
 
 namespace task {
@@ -55,12 +57,12 @@ namespace task {
         entry.handle = (void*)::LoadLibraryW(path.wstring().c_str());
         if (!entry.handle || entry.handle == INVALID_HANDLE_VALUE) return;
 
-        entry.after_done = (void(*)(const char*))::GetProcAddress((HMODULE)entry.handle, "after_done");
+        entry.after_done = (void(*)(const char*, const char*))::GetProcAddress((HMODULE)entry.handle, "after_done");
 #else
         entry.handle = dlopen(path.string().c_str(), RTLD_LAZY);
         if (!entry.handle) return;
 
-        entry.after_done = (void(*)(const char*))dlsym(entry.handle, "after_done");
+        entry.after_done = (void(*)(const char*, const char*))dlsym(entry.handle, "after_done");
 #endif
 
         entries_.insert(std::make_pair(entry.name, std::move(entry)));
@@ -72,12 +74,14 @@ namespace task {
 
         Parser parser;
         std::string description = parser.to_string(task);
+        nlohmann::json config_json = Manager::instance().config();
+        std::string config_str = config_json.dump();
 
         for (auto& entry : entries_) {
             if (type == Type::kAfterDone) {
                 if (entry.second.after_done) {
                     spdlog::debug("call after done plugin: {}", entry.first);
-                    entry.second.after_done(description.c_str());
+                    entry.second.after_done(description.c_str(), config_str.c_str());
                     spdlog::debug("finish call after done plugin: {}", entry.first);
                 }
             }
