@@ -47,7 +47,7 @@ namespace task {
         struct Entry {
             std::string name;
             void* handle;
-            std::function<void(const char*)> after_done;
+            std::function<void(const char*, const char*)> after_done;
         };
         std::unordered_map<std::string, Entry> entries_;
     };

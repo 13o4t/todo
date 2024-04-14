@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21)
 
 project(plugins LANGUAGES CXX)
 
-set(sources src/example_plugin.cpp)
+set(sources src/plugin_repeat.cpp)
 
 foreach(file ${sources})
     get_filename_component(libname ${file} NAME_WLE)
@@ -15,7 +15,7 @@ foreach(file ${sources})
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/src/todo/plugins"
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/src/todo/plugins"
     )
-    target_link_libraries(${libname} PRIVATE todo::task)
+    target_link_libraries(${libname} PRIVATE todo::task fmt::fmt spdlog::spdlog)
     setup_project(${libname})
 endforeach()
 

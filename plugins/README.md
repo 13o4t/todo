@@ -1,7 +1,5 @@
-Set cmake option `BUILD_PLUGINS=ON` to build plugins.
+# Plugins
 
-Supported entry:
+## Plugin Repeat
 
-- after done task 
-
-    ```void after_done(const char* task_description)```
+Support sepecial tag `repeat` for generate repeat task when task done, for repeat on friday, use `repeat:friday`. Date format is same as `due`

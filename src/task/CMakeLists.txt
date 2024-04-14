@@ -1,4 +1,4 @@
-set(sources parser.cpp date.cpp filter.cpp manager.cpp plugin.cpp)
+set(sources parser.cpp date.cpp filter.cpp manager.cpp plugin.cpp config.cpp)
 
 add_library(task ${sources})
 add_library(todo::task ALIAS task)
@@ -18,6 +18,8 @@ target_link_libraries(
     PRIVATE
         fmt::fmt
         spdlog::spdlog
+    PUBLIC
+        nlohmann_json::nlohmann_json
 )
 
 include(GenerateExportHeader)

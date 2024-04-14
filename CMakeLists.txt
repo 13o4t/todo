@@ -28,7 +28,7 @@ if(BUILD_TESTING)
     add_subdirectory(test)
 endif()
 
-option(BUILD_PLUGINS "Build plugins" OFF)
+option(BUILD_PLUGINS "Build plugins" ON)
 if(BUILD_PLUGINS)
     message(STATUS "Build plugins")
     add_subdirectory(plugins)

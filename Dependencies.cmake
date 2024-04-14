@@ -23,4 +23,13 @@ function(setup_dependencies)
         CPMAddPackage("gh:catchorg/Catch2@3.3.2")
     endif()
 
+    if (NOT TARGET nlohmann_json::nlohmann_json)
+        CPMAddPackage(
+            NAME nlohmann_json
+            VERSION 3.11.3
+            GITHUB_REPOSITORY "nlohmann/json"
+            OPTIONS "JSON_BuildTests OFF"
+        )
+    endif()
+
 endfunction()
